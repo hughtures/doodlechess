@@ -2,7 +2,7 @@
 
 Chess drawn as cartoon doodles on notebook paper. One page, no build step, no libraries, no tracking.
 
-**Play it:** <add your GitHub Pages link here> — or clone the repo and open `index.html` in a browser.
+**Play it:** https://hughtures.github.io/doodlechess/ — or clone the repo and open `index.html` in a browser.
 
 Pick your paper and your pieces on the first screen (nine papers: lined, graph, dotted, plain, legal pad,
 kraft, parchment, napkin, blueprint; light or dark; ten piece sets). Then play a friend across the table or
