@@ -413,7 +413,7 @@ button.hand { -webkit-appearance: none; appearance: none; }
 .joinrow { display: flex; gap: 8px; margin-top: 8px; }
 #joincode { flex: 1; min-width: 0; font: 700 24px var(--display); padding: 4px 12px; border: 2.5px solid var(--ink); background: var(--paper); color: var(--ink); border-radius: 14px 4px 14px 4px; text-transform: lowercase; letter-spacing: 2px; }
 #joincode:focus-visible { outline: 3px dashed var(--ink-blue); outline-offset: 2px; }
-/* ---- playful pass: moods, bubbles, stickers, boiling lines, draw-in, critters ---- */
+/* ---- playful pass: moods, bubbles, stickers, draw-in, critters ---- */
 /* eyes: bigger, they follow the pointer, and faces change with the mood */
 .pc { --es: 1.22; --ey: 1; }
 .pc.th-pixel { --es: 1; }
@@ -488,14 +488,6 @@ button.hand:active:not(:disabled) { animation: none; transform: translate(2px, 2
 }
 @keyframes cloudbob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-4px) rotate(2deg); } }
 
-/* lines that boil: three drawings of the board, shown one after another */
-.grid .v { opacity: 0; animation: boil .9s steps(1, end) infinite; }
-.hatch .v { opacity: 1; }
-.grid .v1 { animation-delay: .3s; } .grid .v2 { animation-delay: .6s; }
-@keyframes boil { 0% { opacity: 1; } 33.4% { opacity: 0; } }
-html.no-wobble .grid .v, html.no-wobble .hatch .v, .frame.intro .grid .v, .frame.intro .hatch .v { animation: none; }
-html.no-wobble .grid .v0, html.no-wobble .hatch .v0, .frame.intro .grid .v0, .frame.intro .hatch .v0 { opacity: 1; }
-html.no-wobble .v1, html.no-wobble .v2, .frame.intro .v1, .frame.intro .v2 { display: none; }
 /* a new game: the grid draws itself, the green scribbles in, the pieces pop up one by one */
 .frame.intro .v0 .ln { stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: drawln .5s ease-out var(--d, 0s) forwards; }
 @keyframes drawln { to { stroke-dashoffset: 0; } }
@@ -520,7 +512,6 @@ html.no-wobble .v1, html.no-wobble .v2, .frame.intro .v1, .frame.intro .v2 { dis
 
 @media (prefers-reduced-motion: reduce) {
   .pc.scared, .pc.scared .sweat, .zzz text, .sparkle, .stars, .status.think::after, .critters .snail, .critters .ant, .critters .ant g, button.hand:hover:not(:disabled), .frame.intro .hatch, .frame.intro .sq > .pc { animation: none !important; }
-  .grid .v, .hatch .v { animation: none; } .grid .v0, .hatch .v0 { opacity: 1; } .grid .v1, .grid .v2, .hatch .v1, .hatch .v2 { display: none; }
   .critters .snail { left: 40%; } .critters .ant { left: 62%; } .critters .ant.a2 { left: 70%; } .critters .ant.a3 { left: 78%; }
 }
 </style>
@@ -2959,7 +2950,7 @@ function render() { renderBoard(); renderPanel(); }
 
 function announce(text) { const el = $('announce'); el.textContent = ''; setTimeout(() => { el.textContent = text; }, 30); }
 
-// Hand-drawn board, made once but drawn three times over (the three versions take turns, so the lines boil like a flip-book):
+// Hand-drawn board, made once and then held perfectly still:
 // ruled lines drawn twice with a pen that wobbles, and a scribble of green pencil on the dark squares.
 (function drawBoard() {
   let seed = 7;
@@ -2995,7 +2986,7 @@ function announce(text) { const el = $('announce'); el.textContent = ''; setTime
     else out = '<path class="g1" d="' + lines.map((l) => l.a).join('') + '"/><path class="g2" d="' + lines.map((l) => l.b).join('') + '"/>';
     return '<g class="v v' + v + '">' + out + '</g>';
   }
-  $('grid').innerHTML = gridVariant(0) + gridVariant(1) + gridVariant(2);
+  $('grid').innerHTML = gridVariant(0);
 
   // Pencil hatching: short slanting strokes side by side, in a pass of a different slope on top, never quite tidy.
   const hatch = (x0, y0, step, ang, keep) => {
@@ -3019,7 +3010,7 @@ function announce(text) { const el = $('announce'); el.textContent = ''; setTime
     return d;
   };
   let wash = '', hv = '';
-  for (let v = 0; v < 1; v++) {   // the green stays one steady drawing; only the board lines boil
+  for (let v = 0; v < 1; v++) {
     let h1 = '', h2 = '';
     for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
       if ((r + c) % 2 !== 1) continue;
