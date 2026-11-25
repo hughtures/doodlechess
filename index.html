@@ -109,6 +109,12 @@ h1 {
   display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; transform: rotate(-1.5deg);
 }
 h1 svg { width: clamp(44px, 8vw, 66px); height: auto; overflow: visible; }
+/* the title is a button: tap it during a game to go back to the welcome screen */
+h1 .logo { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; cursor: pointer; transition: transform .15s ease-out; -webkit-tap-highlight-color: transparent; }
+h1 .logo:hover { transform: rotate(1.2deg) scale(1.03); }
+h1 .logo:active { transform: scale(.97, 1.03); }
+h1 .logo:focus-visible { outline: 3px dashed var(--ink-blue); outline-offset: 6px; }
+h1 .logo.inert { cursor: default; pointer-events: none; }
 .scribble-under { display: block; width: min(300px, 70%); height: 16px; margin-top: -4px; overflow: visible; }
 /* the signature after the title: small, in red pen, sitting on the title's baseline */
 .byline { font-size: clamp(17px, 2.6vw, 26px); color: var(--ink-red); align-self: flex-end; padding-bottom: clamp(5px, 1.3vw, 13px); transform: rotate(2deg); white-space: nowrap; }
@@ -706,10 +712,12 @@ button.hand:active:not(:disabled) { animation: none; transform: translate(2px, 2
 <div class="page">
   <header>
     <h1>
+      <button type="button" class="logo inert" id="home" aria-label="Doodle Chess. Go back to the welcome screen">
       <svg viewBox="0 0 48 34" class="crown" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink-red);filter:url(#wob1)">
         <path d="M4 30 L7 9 L16 20 L24 5 L32 20 L41 9 L44 30 Z"/><path d="M6 33 H42"/><circle cx="7" cy="6" r="2"/><circle cx="24" cy="2.5" r="2"/><circle cx="41" cy="6" r="2"/>
       </svg>
       Doodle Chess
+      </button>
       <span class="byline">(by Hugh)</span>
     </h1>
     <svg class="scribble-under" viewBox="0 0 320 16" aria-hidden="true" fill="none" stroke="var(--ink-red)" stroke-width="3" stroke-linecap="round"><path d="M4 9 C60 2 130 13 200 6 S290 9 316 4"/><path d="M14 14 C80 8 150 15 230 11"/></svg>
@@ -2558,7 +2566,7 @@ function renderClock() {
 let lastTick = performance.now();
 setInterval(() => {
   const now = performance.now(), dt = Math.min(now - lastTick, 1000); lastTick = now;
-  if (document.hidden || !G.clock.base || G.over || !G.history.length || G.mode === 'puzzle' || G.mode === 'online') return;
+  if (document.hidden || $('game').hidden || !G.clock.base || G.over || !G.history.length || G.mode === 'puzzle' || G.mode === 'online') return;
   if (inReview() || G.oops) return; // looking back, or deciding about an "Oops!": nobody can move, so nobody's time runs
   const side = G.state.turn;
   G.clock[side] -= dt;
@@ -3064,11 +3072,29 @@ $('startgrid').innerHTML = SETS.map(s => '<button type="button" class="hand star
 let started = false;
 function startGame(id) {
   G.pieces = prefs.pieces = id; savePrefs();
-  $('start').hidden = true; $('game').hidden = false;
+  $('start').hidden = true; $('game').hidden = false; $('home').classList.remove('inert');
   if (!started) { started = true; if (!restoreGame()) newGame(); } else render();
   window.scrollTo(0, 0);
 }
-try { const sv = JSON.parse(ls.get('doodle-chess-save') || ''); if (sv && sv.moves && sv.moves.length) $('startnote').textContent = 'Your game in progress will carry on. You can change pieces and paper any time in Settings.'; } catch (e) {}
+const START_NOTE = $('startnote').textContent;
+// The welcome note says so when there is a game waiting (one saved from before, or the one you just stepped away from).
+function updateStartNote() {
+  let waiting = started && G.history && G.history.length > 0;
+  if (!waiting) { try { const sv = JSON.parse(ls.get('doodle-chess-save') || ''); waiting = !!(sv && sv.moves && sv.moves.length); } catch (e) {} }
+  $('startnote').textContent = waiting ? 'Your game in progress will carry on. You can change pieces and paper any time in Settings.' : START_NOTE;
+}
+updateStartNote();
+// Tapping the title during a game goes back to the welcome screen. The game is kept: pick a set of pieces to carry on.
+function goHome() {
+  if ($('game').hidden) return;
+  if (started) saveGame();
+  document.querySelectorAll('.bubble, .award').forEach((el) => el.remove());
+  $('game').hidden = true; $('start').hidden = false; $('home').classList.add('inert');
+  updateStartNote(); refreshChoices();
+  window.scrollTo(0, 0);
+  announce('Welcome screen. Pick a set of pieces to carry on with your game, or start a new one.');
+}
+$('home').addEventListener('click', goHome);
 // each piece-set button shows a little queen from each side
 $('pieces').innerHTML = SETS.map(s => '<button type="button" class="hand setbtn" data-pieces="' + s.id + '"><span class="pv">' +
   pieceSvg({ t: 'q', c: 'w' }, 1, { th: s.id }) + pieceSvg({ t: 'q', c: 'b' }, 2, { th: s.id }) + '</span><span>' + s.label + '</span></button>').join('');

@@ -11,6 +11,7 @@ device; nothing is sent anywhere.
 
 ## What's in it
 
+- **Back to the welcome screen.** Tap the title at the top during a game to go home. Your game is kept, and the clocks wait; pick a set of pieces to carry on.
 - **Undo and Redo.** Against the computer, one tap takes back (or puts back) your move and its reply.
 - **Look back.** The « ‹ › » buttons (or Home / PageUp / PageDown / End, or the arrow keys on the buttons) step through the game; tap any move in the list; tap the board to return.
 - **Puzzles.** 26 checkmate puzzles (mate in 1, then mate in 2). Progress is remembered.
